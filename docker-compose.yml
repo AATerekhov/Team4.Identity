@@ -13,6 +13,8 @@ services:
     volumes:
       - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
       - ${APPDATA}/ASP.NET/Https:/root/.aspnet/https:ro
+    networks:
+      - devnet
 
   webapi:
     image: ${DOCKER_REGISTRY-}webapi
@@ -29,4 +31,11 @@ services:
       - ${APPDATA}/ASP.NET/Https:/root/.aspnet/https:ro
     depends_on:
       - identityserver
+    networks:
+      - devnet
+
+networks:
+  devnet:
+    name: devnet
+    driver: bridge
   
