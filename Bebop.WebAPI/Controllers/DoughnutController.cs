@@ -9,6 +9,11 @@ using Microsoft.Extensions.Options;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Net.Http.Json;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
+using System.Net.Http.Headers;
 
 namespace WebAPI.Controllers
 {
@@ -57,7 +62,10 @@ namespace WebAPI.Controllers
         [HttpGet]
         public async Task<IActionResult> Get()
         {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var token = GenerateJwtToken(User.Claims);
             //if (!CheckKey(out IActionResult actionResult)) return actionResult;
+            _roomDesignerServiceClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
             var response = await _roomDesignerServiceClient.GetAsync("/api/v1/Case");
             return await CheckResponse(response);
         }
@@ -90,6 +98,22 @@ namespace WebAPI.Controllers
                 return Content(content, "application/json");
             }
             else return StatusCode((int)response.StatusCode, response.ReasonPhrase);
+        }
+
+        private string GenerateJwtToken(IEnumerable<Claim> claims)
+        {
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_validApiKeys.First()));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var token = new JwtSecurityToken(
+                issuer: "Gateway",
+                audience: "Microservices",
+                claims: claims,
+                expires: DateTime.UtcNow.AddMinutes(5),
+                signingCredentials: creds
+            );
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
         }
     }
 }

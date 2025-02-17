@@ -22,8 +22,10 @@ services:
       context: .
       dockerfile: Bebop.WebAPI/Dockerfile
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=https://+:8081;http://+:8080
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: https://+:8081;http://+:8080
+      ApiGateWaySettings:ValidApiKeys: ${GATEWAY_KEY_HABIT} 
+      ApiGateWaySettings:RoomDesignerServiceBaseUrl: http://roomsdesigner-service:8080
     ports:
       - "5082:8080"
       - "5002:8081"
