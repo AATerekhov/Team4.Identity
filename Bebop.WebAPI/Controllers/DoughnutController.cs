@@ -1,19 +1,17 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
-using System.Collections.Generic;
-using WebAPI.Models;
-using System.Net.Http;
-using WebAPI.Settings;
 using Microsoft.Extensions.Options;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Net.Http.Json;
 using Microsoft.IdentityModel.Tokens;
+using System;
+using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Text;
-using System.Net.Http.Headers;
+using System.Threading.Tasks;
+using WebAPI.Settings;
 
 namespace WebAPI.Controllers
 {
@@ -34,62 +32,18 @@ namespace WebAPI.Controllers
             _validApiKeys = new HashSet<string>(_gateWaySettings.ValidApiKeys.Split(',').Select(apiKey => apiKey.Trim()));
             _roomDesignerServiceClient = httpClientFactory.CreateClient("RoomDesignerServiceClient");
         }
-        //private readonly List<Doughnut> Doughnuts = new List<Doughnut>()
-        //{
-        //    new Doughnut
-        //    {
-        //        Name = "Holey Moley",
-        //        Filling = "None",
-        //        Iced = true,
-        //        Price = 1.99
-        //    },
-        //    new Doughnut
-        //    {
-        //        Name = "Berry Nice",
-        //        Filling = "Raspberry",
-        //        Iced = false,
-        //        Price = 2.99
-        //    },
-        //    new Doughnut
-        //    {
-        //        Name = "Chip Off The Old Choc",
-        //        Filling = "Chocolate",
-        //        Iced = false,
-        //        Price = 2.99
-        //    },
-        //};
 
         [HttpGet]
         public async Task<IActionResult> Get()
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var token = GenerateJwtToken(User.Claims);
-            //if (!CheckKey(out IActionResult actionResult)) return actionResult;
+
             _roomDesignerServiceClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
             var response = await _roomDesignerServiceClient.GetAsync("/api/v1/Case");
             return await CheckResponse(response);
         }
-        //[HttpPost]
-        //public IActionResult Post() 
-        //{
 
-        //    return Ok(Doughnuts);
-        //}
-
-        private bool IsApiKeyValid(string apiKey)
-        {
-            // Check if the API key exists in the valid API keys HashSet
-            return _validApiKeys.Contains(apiKey);
-        }
-        private bool CheckKey(out IActionResult actionResult)
-        {
-            // Check for X-API-Key header
-            if (!Request.Headers.TryGetValue("X-API-Key", out var apiKey)) { actionResult = BadRequest("TM-API-Key header is missing."); return false; }
-            // Validate the API key
-            if (!IsApiKeyValid(apiKey)) { actionResult = actionResult = StatusCode(401, "Invalid API key."); return false; }
-            actionResult = StatusCode(200, "API key is valid");
-            return true;
-        }
         private async Task<IActionResult> CheckResponse(HttpResponseMessage response)
         {
             if (response.IsSuccessStatusCode)
