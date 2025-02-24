@@ -74,10 +74,10 @@ namespace ClientApi
                 app.UseDeveloperExceptionPage();
             }
 
-            app.Run(async (context) =>
-            {
-                await context.Response.WriteAsync("Doughnut API is running!");
-            });
+            //app.Run(async (context) =>
+            //{
+            //    await context.Response.WriteAsync("Doughnut API is running!");
+            //});
         }
     }
 }

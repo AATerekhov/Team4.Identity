@@ -2,14 +2,17 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Net.Http.Json;
 using System.Security.Claims;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using WebAPI.Settings;
 
@@ -40,7 +43,34 @@ namespace WebAPI.Controllers
             var token = GenerateJwtToken(User.Claims);
 
             _roomDesignerServiceClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            var response = await _roomDesignerServiceClient.GetAsync("/api/v1/Case");
+            var response = await _roomDesignerServiceClient.GetAsync("/api/v1/Cases/owner");
+            return await CheckResponse(response);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Add([FromBody] JsonElement json)
+        {
+            var token = GenerateJwtToken(User.Claims);
+            _roomDesignerServiceClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            var response = await _roomDesignerServiceClient.PostAsync($"/api/v1/Cases", JsonContent.Create(json));
+            return await CheckResponse(response);
+        }
+
+        [HttpPut]
+        public async Task<IActionResult> Update([FromBody] JsonElement json)
+        {
+            var token = GenerateJwtToken(User.Claims);
+            _roomDesignerServiceClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            var response = await _roomDesignerServiceClient.PutAsync($"/api/v1/Cases", JsonContent.Create(json));
+            return await CheckResponse(response);
+        }
+
+        [HttpDelete("{id:guid}")]
+        public async Task<IActionResult> Delete(Guid id)
+        {
+            var token = GenerateJwtToken(User.Claims);
+            _roomDesignerServiceClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            var response = await _roomDesignerServiceClient.DeleteAsync($"/api/v1/Cases/{id}");
             return await CheckResponse(response);
         }
 
