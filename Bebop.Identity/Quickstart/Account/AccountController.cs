@@ -132,6 +132,7 @@ namespace IdentityServerHost.Quickstart.UI
                     {
                         DisplayName = user.Username
                     };
+                    isuser.AdditionalClaims = user.Claims;
 
                     await HttpContext.SignInAsync(isuser, props);
 
