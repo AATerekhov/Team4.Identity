@@ -15,7 +15,8 @@ namespace IdentityServer
             {
                 new IdentityResources.OpenId(),
                 new IdentityResources.Profile(),
-                new IdentityResource("email", new[] { "email" })
+                //new IdentityResource("email", new[] { "email" })                
+                new IdentityResources.Email()
             };
 
         public static IEnumerable<ApiScope> ApiScopes =>

@@ -1,4 +1,5 @@
-﻿using IdentityServer4.Models;
+﻿using IdentityModel;
+using IdentityServer4.Models;
 using IdentityServer4.Services;
 using System.Collections.Generic;
 using System.Security.Claims;
@@ -10,14 +11,31 @@ namespace IdentityServer.Infrastructure
     {
         public Task GetProfileDataAsync(ProfileDataRequestContext context)
         {
-            var emailClaim = context.Subject.FindFirst("email");
+            var emailClaim = context.Subject.FindFirst(JwtClaimTypes.Email);
+            var nameClaim = context.Subject.FindFirst(JwtClaimTypes.GivenName);
 
-            var claims = new List<Claim>
+            if (emailClaim != null && nameClaim != null)
             {
-                new Claim("email", emailClaim?.Value)
-            };
+                var claims = new List<Claim>
+                {
+                    new Claim(ClaimTypes.Email, emailClaim?.Value),
+                    new Claim(ClaimTypes.GivenName, nameClaim?.Value)
+                };
+                context.IssuedClaims.AddRange(claims);
+            }
+            else
+            {
+                emailClaim = context.Subject.FindFirst(ClaimTypes.Email);
+                nameClaim = context.Subject.FindFirst(ClaimTypes.GivenName);
 
-            context.IssuedClaims.AddRange(claims);
+                var claims = new List<Claim>
+                {
+                    new Claim(JwtClaimTypes.Email, emailClaim?.Value),
+                    new Claim(JwtClaimTypes.GivenName, nameClaim?.Value)
+                };
+                context.IssuedClaims.AddRange(claims);
+            }
+            
             return Task.CompletedTask;
         }
 

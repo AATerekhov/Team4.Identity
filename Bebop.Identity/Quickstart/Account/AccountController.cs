@@ -123,7 +123,7 @@ namespace IdentityServerHost.Quickstart.UI
                         props = new AuthenticationProperties
                         {
                             IsPersistent = true,
-                            ExpiresUtc = DateTimeOffset.UtcNow.Add(AccountOptions.RememberMeLoginDuration)
+                            ExpiresUtc = DateTimeOffset.UtcNow.Add(AccountOptions.RememberMeLoginDuration)                            
                         };
                     };
 
@@ -131,11 +131,8 @@ namespace IdentityServerHost.Quickstart.UI
                     var isuser = new IdentityServerUser(user.SubjectId)
                     {
                         DisplayName = user.Username,
-                        
+                        AdditionalClaims = user.Claims                        
                     };
-                    var email = user.Claims.Where(c => c.Type == "email").FirstOrDefault();
-                    if (email is not null)
-                        isuser.AdditionalClaims.Add(email);
 
                     await HttpContext.SignInAsync(isuser, props);
 
