@@ -4,7 +4,12 @@ using Microsoft.Extensions.Options;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Net.Http.Json;
+using System.Security.Claims;
+using System.Text.Json;
 using System.Threading.Tasks;
+using WebAPI.Controllers.Extentions;
 using WebAPI.Settings;
 
 namespace WebAPI.Controllers
@@ -26,6 +31,22 @@ namespace WebAPI.Controllers
             _cardsServiceClient = httpClientFactory.CreateClient("BookOfHabitsServiceClient");
         }
 
+        [HttpGet]
+        public async Task<IActionResult> Get()
+        {       
+            var response = await _cardsServiceClient.GetAsync("/api/v1/Cards");
+            return await CheckResponse(response);
+        }
+
+        [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> Add([FromBody] JsonElement json)
+        {
+            var token = User.Claims.GenerateJwtToken(_validApiKeys);
+            _cardsServiceClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            var response = await _cardsServiceClient.PostAsync($"/api/v1/Cards", JsonContent.Create(json));
+            return await CheckResponse(response);
+        }
 
         private async Task<IActionResult> CheckResponse(HttpResponseMessage response)
         {
