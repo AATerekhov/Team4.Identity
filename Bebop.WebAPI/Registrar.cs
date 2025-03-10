@@ -12,6 +12,9 @@ namespace WebAPI
             var apiGatewayConnection = configuration.Get<ApplicationSettings>().ApiGateWaySettings;
             services.AddSingleton(apiGatewayConnection);
             services.AddHttpClient("RoomDesignerServiceClient", c => c.BaseAddress = new Uri(apiGatewayConnection.RoomDesignerServiceBaseUrl));
+            services.AddHttpClient("BookOfHabitsServiceClient", c => c.BaseAddress = new Uri(apiGatewayConnection.RoomDesignerServiceBaseUrl));
+
+
             services.Configure<ApiGateWaySettings>(options =>
             {
                 options.RoomDesignerServiceBaseUrl = apiGatewayConnection.RoomDesignerServiceBaseUrl;
