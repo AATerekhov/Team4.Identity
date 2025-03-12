@@ -1,12 +1,12 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using System.Security.Claims;
 using System.Text.Json;
 using System.Threading.Tasks;
 using WebAPI.Controllers.Extentions;
@@ -38,6 +38,13 @@ namespace WebAPI.Controllers
             return await CheckResponse(response);
         }
 
+        [HttpGet("{id:guid}")]
+        public async Task<IActionResult> GetById(Guid id)
+        {
+            var response = await _cardsServiceClient.GetAsync($"/api/v1/Cards/{id}");
+            return await CheckResponse(response);
+        }
+
         [HttpPost]
         [Authorize]
         public async Task<IActionResult> Add([FromBody] JsonElement json)
@@ -45,6 +52,42 @@ namespace WebAPI.Controllers
             var token = User.Claims.GenerateJwtToken(_validApiKeys);
             _cardsServiceClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
             var response = await _cardsServiceClient.PostAsync($"/api/v1/Cards", JsonContent.Create(json));
+            return await CheckResponse(response);
+        }
+
+        [HttpPut]
+        [Authorize]
+        public async Task<IActionResult> Update([FromBody] JsonElement json)
+        {
+            var token = User.Claims.GenerateJwtToken(_validApiKeys);
+            _cardsServiceClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            var response = await _cardsServiceClient.PutAsync($"/api/v1/Cards", JsonContent.Create(json));
+            return await CheckResponse(response);
+        }
+
+        /// <summary>
+        /// Обновление подписей.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="json"></param>
+        /// <returns></returns>
+        [HttpPut("{id:guid}")]
+        [Authorize]
+        public async Task<IActionResult> UpdateSignatures(Guid id, [FromBody] JsonElement json)
+        {
+            var token = User.Claims.GenerateJwtToken(_validApiKeys);
+            _cardsServiceClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            var response = await _cardsServiceClient.PutAsync($"/api/v1/Cards/{id}", JsonContent.Create(json));
+            return await CheckResponse(response);
+        }
+
+        [HttpDelete("{id:guid}")]
+        [Authorize]
+        public async Task<IActionResult> Delete(Guid id)
+        {
+            var token = User.Claims.GenerateJwtToken(_validApiKeys);
+            _cardsServiceClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            var response = await _cardsServiceClient.DeleteAsync($"/api/v1/Cards/{id}");
             return await CheckResponse(response);
         }
 
