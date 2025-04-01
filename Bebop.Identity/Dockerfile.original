@@ -11,26 +11,27 @@ EXPOSE 8081
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["Bebop.WebAPI/WebAPI.csproj", "Bebop.WebAPI/"]
-RUN dotnet restore "./Bebop.WebAPI/WebAPI.csproj"
+COPY ["Bebop.Identity/IdentityServer.csproj", "Bebop.Identity/"]
+RUN dotnet restore "./Bebop.Identity/IdentityServer.csproj" --verbosity detailed --no-cache --ignore-failed-sources
 COPY . .
-WORKDIR "/src/Bebop.WebAPI"
-RUN dotnet build "./WebAPI.csproj" -c $BUILD_CONFIGURATION -o /app/build
+WORKDIR "/src/Bebop.Identity"
+RUN dotnet build "IdentityServer.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 # Этот этап используется для публикации проекта службы, который будет скопирован на последний этап
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "./WebAPI.csproj" -c $BUILD_CONFIGURATION -o /app/publish
+RUN dotnet publish "IdentityServer.csproj" -c $BUILD_CONFIGURATION -o /app/publish
 
 # Этот этап используется в рабочей среде или при запуске из VS в обычном режиме (по умолчанию, когда конфигурация отладки не используется)
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-COPY Bebop.WebAPI/certs/gataway.crt /https/gataway.crt
-COPY Bebop.WebAPI/certs/gataway.key /https/gataway.key
+COPY Bebop.Identity/certs/identity.crt /https/identity.crt
+COPY Bebop.Identity/certs/identity.key /https/identity.key
 
 # Установка переменных окружения для HTTPS
 ENV ASPNETCORE_URLS=https://+:8081
-ENV ASPNETCORE_Kestrel__Certificates__Default__Path=/https/gataway.crt
-ENV ASPNETCORE_Kestrel__Certificates__Default__KeyPath=/https/gataway.key
-ENTRYPOINT ["dotnet", "WebAPI.dll"]
+ENV ASPNETCORE_Kestrel__Certificates__Default__Path=/https/identity.crt
+ENV ASPNETCORE_Kestrel__Certificates__Default__KeyPath=/https/identity.key
+
+ENTRYPOINT ["dotnet", "IdentityServer.dll"]
