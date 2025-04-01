@@ -4,8 +4,10 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Logging;
+using Microsoft.AspNetCore.SignalR;
 using System.Net.Http;
 using WebAPI;
+using WebAPI.Services;
 
 namespace ClientApi
 {
@@ -21,7 +23,7 @@ namespace ClientApi
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddCors();
-
+            services.AddSignalR();
             services.AddHttpClients(Configuration);
 
             // adds DI services to DI and configures bearer as the default scheme
@@ -60,11 +62,15 @@ namespace ClientApi
             // adds authentication middleware to the pipeline so authentication will be performed on every request
             app.UseAuthentication();
             app.UseMvc();
+            app.UseRouting();
+            
 
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
+
+
 
             //app.Run(async (context) =>
             //{
