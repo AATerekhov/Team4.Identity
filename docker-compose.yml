@@ -4,15 +4,16 @@ services:
     build:
       context: .
       dockerfile: Bebop.Identity/Dockerfile
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=https://+:8081;http://+:8080
+    # environment:
+      # ASPNETCORE_ENVIRONMENT: Development
+      # ASPNETCORE_URLS: https://+:8081;http://+:8080
     ports:
-      - "5081:8080"
+      # - "5081:8080"
       - "5001:8081"
     volumes:
-      - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
-      - ${APPDATA}/ASP.NET/Https:/root/.aspnet/https:ro
+      # - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
+      # - ${APPDATA}/ASP.NET/Https:/root/.aspnet/https:ro
+      - ./Bebop.Identity/certs:/https
     networks:
       - devnet
 
@@ -22,16 +23,15 @@ services:
       context: .
       dockerfile: Bebop.WebAPI/Dockerfile
     environment:
-      ASPNETCORE_ENVIRONMENT: Development
-      ASPNETCORE_URLS: https://+:8081;http://+:8080
+      # ASPNETCORE_ENVIRONMENT: Development
       ApiGateWaySettings:ValidApiKeys: ${GATEWAY_KEY_HABIT} 
       ApiGateWaySettings:RoomDesignerServiceBaseUrl: http://roomsdesigner-service:8080
       ApiGateWaySettings:BookOfHabitsServiceBaseUrl: http://habitsbook-service:8080
     ports:
-      - "5082:8080"
       - "5002:8081"
     volumes:
-      - ${APPDATA}/ASP.NET/Https:/root/.aspnet/https:ro
+      # - ${APPDATA}/ASP.NET/Https:/root/.aspnet/https:ro
+      - ./Bebop.WebAPI/certs:/https
     depends_on:
       - identityserver
     networks:
