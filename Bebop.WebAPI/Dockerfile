@@ -26,11 +26,5 @@ RUN dotnet publish "./WebAPI.csproj" -c $BUILD_CONFIGURATION -o /app/publish
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-COPY Bebop.WebAPI/certs/gataway.crt /https/gataway.crt
-COPY Bebop.WebAPI/certs/gataway.key /https/gataway.key
-
-# Установка переменных окружения для HTTPS
-ENV ASPNETCORE_URLS=https://+:8081
-ENV ASPNETCORE_Kestrel__Certificates__Default__Path=/https/gataway.crt
-ENV ASPNETCORE_Kestrel__Certificates__Default__KeyPath=/https/gataway.key
+COPY ./certs/gataway.pfx  /https/gataway.pfx
 ENTRYPOINT ["dotnet", "WebAPI.dll"]
