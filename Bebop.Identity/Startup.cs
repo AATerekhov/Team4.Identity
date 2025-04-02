@@ -3,14 +3,12 @@
 
 
 using IdentityServer.Infrastructure;
-using IdentityServer4;
 using IdentityServerHost.Quickstart.UI;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.IdentityModel.Tokens;
 
 namespace IdentityServer
 {
@@ -45,7 +43,7 @@ namespace IdentityServer
                 .AddInMemoryApiResources(Config.ApiResources)
                 .AddTestUsers(TestUsers.Users)
                 .AddProfileService<HabitProfileService>(); // Регистрация нашего ProfileServic
-
+            services.AddCors(options => options.AddDefaultPolicy(builder => builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod()));
             builder.AddDeveloperSigningCredential();
         }
 
@@ -56,6 +54,7 @@ namespace IdentityServer
                 app.UseDeveloperExceptionPage();
             }
 
+            app.UseCors();
             app.UseStaticFiles();
             app.UseRouting();
 
