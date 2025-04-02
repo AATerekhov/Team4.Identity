@@ -13,10 +13,14 @@ namespace WebAPI
             services.AddSingleton(apiGatewayConnection);
             services.AddHttpClient("RoomDesignerServiceClient", c => c.BaseAddress = new Uri(apiGatewayConnection.RoomDesignerServiceBaseUrl));
             services.AddHttpClient("BookOfHabitsServiceClient", c => c.BaseAddress = new Uri(apiGatewayConnection.BookOfHabitsServiceBaseUrl));
+            services.AddHttpClient("DiaryServiceBaseUrlClient", c => c.BaseAddress = new Uri(apiGatewayConnection.DiaryServiceBaseUrl));
+            services.AddHttpClient("MagazineServiceBaseUrlClient", c => c.BaseAddress = new Uri(apiGatewayConnection.MagazineServiceBaseUrl));
 
             services.Configure<ApiGateWaySettings>(options =>
             {
                 options.BookOfHabitsServiceBaseUrl = apiGatewayConnection.BookOfHabitsServiceBaseUrl;
+                options.DiaryServiceBaseUrl = apiGatewayConnection.DiaryServiceBaseUrl;
+                options.MagazineServiceBaseUrl = apiGatewayConnection.MagazineServiceBaseUrl;
                 options.RoomDesignerServiceBaseUrl = apiGatewayConnection.RoomDesignerServiceBaseUrl;
                 options.ValidApiKeys = apiGatewayConnection.ValidApiKeys;
             });
