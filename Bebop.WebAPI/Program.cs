@@ -20,7 +20,6 @@ namespace ClientApi
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-
             builder.Services.AddCors();
             builder.Services.AddHttpClients(builder.Configuration);
 
@@ -74,6 +73,8 @@ namespace ClientApi
 
             var app = builder.Build();
 
+           
+
             IdentityModelEventSource.ShowPII = true;
 
             if (app.Environment.IsDevelopment())
@@ -111,6 +112,13 @@ namespace ClientApi
 
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
-                .UseStartup<Startup>();
+                .UseStartup<Startup>()
+                .UseKestrel(options =>
+                {
+                    options.ListenAnyIP(5001, listenOptions =>
+                    {
+                        listenOptions.UseHttps("./certs/identity.pfx", "Pass@habitapi");
+                    });
+                });
     }
 }

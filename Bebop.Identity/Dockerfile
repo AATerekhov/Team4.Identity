@@ -26,5 +26,5 @@ RUN dotnet publish "./IdentityServer.csproj" -c $BUILD_CONFIGURATION -o /app/pub
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-COPY ./certs/identity.pfx  /https/identity.pfx
+COPY ./Bebop.Identity/certs/identity.pfx  /https/identity.pfx
 ENTRYPOINT ["dotnet", "IdentityServer.dll"]
