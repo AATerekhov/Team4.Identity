@@ -63,7 +63,7 @@ namespace ClientApi
             app.UseAuthentication();
             app.UseMvc();
             app.UseRouting();
-            
+
 
             if (env.IsDevelopment())
             {

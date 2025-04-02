@@ -1,15 +1,27 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
+using System;
 using System.Threading.Tasks;
 
 namespace WebAPI.Services
 {
-    [Authorize]
     public class NotificationHub : Hub
     {
-        public async Task SendMessage(string user, string message)
+        public override Task OnConnectedAsync()
         {
-            await Clients.Others.SendAsync("ReceiveMessage", user, message);
+            Console.WriteLine("A Client Connected: " + Context.ConnectionId);
+            return base.OnConnectedAsync();
+        }
+
+        public override Task OnDisconnectedAsync(Exception exception)
+        {
+            Console.WriteLine("A client disconnected: " + Context.ConnectionId);
+            return base.OnDisconnectedAsync(exception);
+        }
+
+        public async Task SendMessage(string message)
+        {
+            await Clients.All.SendAsync("ReceiveMessage", message);
         }
 
         public async Task JoinRoom(string user, string RoomId)

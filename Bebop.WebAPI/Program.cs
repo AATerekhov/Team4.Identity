@@ -1,10 +1,13 @@
 ﻿using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authentication.OAuth;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Logging;
+using Microsoft.IdentityModel.Tokens;
+using System;
 using System.Net.Http;
 using System.Threading.Tasks;
 using WebAPI;
@@ -19,7 +22,6 @@ namespace ClientApi
             var builder = WebApplication.CreateBuilder(args);
 
             builder.Services.AddCors();
-            builder.Services.AddSignalR();
             builder.Services.AddHttpClients(builder.Configuration);
 
             // adds DI services to DI and configures bearer as the default scheme
@@ -32,8 +34,8 @@ namespace ClientApi
                 .AddJwtBearer("Bearer", options =>
                 {
                     // identity server issuing token
-                    options.Authority = "https://identityserver:8081";
-                    options.RequireHttpsMetadata = false;
+                    options.Authority = "https://identityserver:8081"; 
+                    options.RequireHttpsMetadata = true;
 
                     // allow self-signed SSL certs
                     options.BackchannelHttpHandler = new HttpClientHandler { ServerCertificateCustomValidationCallback = delegate { return true; } };
@@ -42,6 +44,12 @@ namespace ClientApi
                     options.Audience = "doughnutapi";
                     options.Events = new JwtBearerEvents
                     {
+                        OnAuthenticationFailed = context =>
+                        {
+                            // Логируйте ошибку аутентификации
+                            Console.WriteLine("Authentication failed: " + context.Exception.Message);
+                            return Task.CompletedTask;
+                        },
                         OnMessageReceived = context =>
                         {
                             var accessToken = context.Request.Query["access_token"];
@@ -56,35 +64,46 @@ namespace ClientApi
                     };
                 });
 
-            builder.Services.AddMvcCore(options => {
+            builder.Services.AddSignalR();
+
+            builder.Services.AddMvcCore(options =>
+            {
                 options.EnableEndpointRouting = false;
-            })
-                .AddAuthorization();
-
-
+            });
+            builder.Services.AddAuthorization();
 
             var app = builder.Build();
 
             IdentityModelEventSource.ShowPII = true;
 
-            app.UseCors(builder =>
-                 builder
-                   .WithOrigins("http://localhost:3000")
-                   .AllowAnyHeader()
-                   .AllowAnyMethod()
-                   .AllowCredentials()
-               );
-            // adds authentication middleware to the pipeline so authentication will be performed on every request
-            app.UseAuthentication();
-            app.UseMvc();
-            app.UseRouting();
-            app.MapHub<NotificationHub>("/hubs/notification");
-
-
             if (app.Environment.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
+            else
+            {
+                app.UseExceptionHandler("/Home/Error");
+                app.UseHsts();
+            }
+
+            app.UseCors(builder =>
+               builder
+                 .WithOrigins("http://localhost:3000")
+                 .AllowAnyHeader()
+                 .AllowAnyMethod()
+                 .AllowCredentials()
+             );
+
+            app.UseRouting();
+          
+            // adds authentication middleware to the pipeline so authentication will be performed on every request
+            app.UseAuthentication();
+            app.UseAuthorization();
+
+            app.UseMvc();
+            app.MapHub<NotificationHub>("/hubs/notification");
+
+
 
             app.Run();
             //CreateWebHostBuilder(args).Build().Run();
