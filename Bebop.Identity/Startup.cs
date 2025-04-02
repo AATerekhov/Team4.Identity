@@ -57,6 +57,7 @@ namespace IdentityServer
             app.UseCors();
             app.UseStaticFiles();
             app.UseRouting();
+            app.UseHttpsRedirection();
 
             app.UseIdentityServer();
             app.UseAuthorization();

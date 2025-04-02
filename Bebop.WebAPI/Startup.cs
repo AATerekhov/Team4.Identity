@@ -61,6 +61,8 @@ namespace ClientApi
             app.UseAuthentication();
             app.UseMvc();
 
+            app.UseHttpsRedirection();
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();

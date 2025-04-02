@@ -4,6 +4,7 @@
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
 USER app
 WORKDIR /app
+EXPOSE 8080
 EXPOSE 8081
 
 
@@ -27,7 +28,7 @@ FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
 COPY Bebop.Identity/certs/identity.crt /https/identity.crt
-COPY Bebop.Identity/certs/identity.key /https/identity.key
+COPY Bebop.Identity/certs/identity.key /https/identity.keys
 # Установка переменных окружения для HTTPS
 ENV ASPNETCORE_URLS=https://+:8081
 ENV ASPNETCORE_Kestrel__Certificates__Default__Path=/https/identity.crt
