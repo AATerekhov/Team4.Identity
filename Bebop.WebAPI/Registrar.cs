@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using WebAPI.Services.Repositories;
 using WebAPI.Settings;
 
 namespace WebAPI
@@ -20,6 +21,7 @@ namespace WebAPI
                 options.RoomDesignerServiceBaseUrl = apiGatewayConnection.RoomDesignerServiceBaseUrl;
                 options.ValidApiKeys = apiGatewayConnection.ValidApiKeys;
             });
+            services.AddSingleton<IUserRepository, UserRepository>();
             return services;
         }
     }
