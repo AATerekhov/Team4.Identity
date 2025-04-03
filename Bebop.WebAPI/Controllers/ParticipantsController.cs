@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,6 +13,8 @@ using System.Security.Claims;
 using System.Text.Json;
 using System.Threading.Tasks;
 using WebAPI.Controllers.Extentions;
+using WebAPI.Services;
+using WebAPI.Services.Repositories;
 using WebAPI.Settings;
 
 namespace WebAPI.Controllers
@@ -24,10 +28,16 @@ namespace WebAPI.Controllers
         // Dictionary to store the client API keys
         private readonly HashSet<string> _validApiKeys;
         private readonly HttpClient _roomDesignerServiceClient;
+        private readonly IHubContext<NotificationHub> _hub;
+        private readonly IUserRepository _userRepository;
         public ParticipantsController(
             IHttpClientFactory httpClientFactory,
-            IOptions<ApiGateWaySettings> gatewaySettings)
+            IOptions<ApiGateWaySettings> gatewaySettings,
+            IHubContext<NotificationHub> hub,
+            IUserRepository userRepository)
         {
+            _hub = hub;
+            _userRepository = userRepository;
             _gateWaySettings = gatewaySettings.Value;
             // Parse the comma-separated valid API keys from the settings and store them in a HashSet
             _validApiKeys = new HashSet<string>(_gateWaySettings.ValidApiKeys.Split(',').Select(apiKey => apiKey.Trim()));
@@ -60,8 +70,20 @@ namespace WebAPI.Controllers
         public async Task<IActionResult> Add([FromBody] JsonElement json)
         {
             var token = User.Claims.GenerateJwtToken(_validApiKeys);
+            var addressee = json.GetProperty("userMail").GetString();
+
+            
             _roomDesignerServiceClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
             var response = await _roomDesignerServiceClient.PostAsync($"/api/v1/Participants", JsonContent.Create(json));
+            if (response.IsSuccessStatusCode)
+            {
+                // Читаем содержимое ответа как строку
+                string jsonResponse = await response.Content.ReadAsStringAsync();
+                // Выводим JSON-ответ
+                var addresseeUser = _userRepository.GetByEmail(addressee);
+                await _hub.Clients.User(addresseeUser.UserId).SendAsync("AddParticipant", jsonResponse);
+            }
+            
             return await CheckResponse(response);
         }
 
