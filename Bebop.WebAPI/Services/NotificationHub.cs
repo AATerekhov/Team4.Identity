@@ -11,7 +11,6 @@ namespace WebAPI.Services
     [Authorize]
     public class NotificationHub(IUserRepository userRepository) : Hub
     {
-        //private static ConcurrentDictionary<string, UserNotification> _userManager = new ConcurrentDictionary<string, UserNotification>();
         public override Task OnConnectedAsync()
         {
             var user = Context.User.Convert();
